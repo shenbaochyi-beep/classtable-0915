@@ -39,6 +39,9 @@ export default function App() {
         if (parsed.school === '臺中市立清水高中' || !parsed.school) {
           parsed.school = '國立成功商業水產職業學校';
         }
+        if (parsed.year === 114 || !parsed.year) {
+          parsed.year = 115;
+        }
         return parsed;
       }
     } catch {
@@ -46,7 +49,7 @@ export default function App() {
     }
     return {
       school: '國立成功商業水產職業學校',
-      year: 114,
+      year: 115,
       sem: 1,
       schedulePreset: 'original',
     };

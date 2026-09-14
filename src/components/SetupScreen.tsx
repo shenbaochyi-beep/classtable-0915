@@ -186,13 +186,13 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1.5">學年度（民國）</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5">學年度</label>
                   <input
                     type="number"
                     min="100"
                     max="200"
                     value={settings.year}
-                    onChange={(e) => onUpdateSettings({ year: parseInt(e.target.value, 10) || 114 })}
+                    onChange={(e) => onUpdateSettings({ year: parseInt(e.target.value, 10) || 115 })}
                     className="w-full px-3 py-2 text-sm bg-slate-50 border border-slate-300 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   />
                 </div>
