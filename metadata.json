@@ -1,0 +1,6 @@
+{
+  "name": "國立成功商業水產職業學校 教師共同空堂查詢系統",
+  "description": "國立成功商業水產職業學校教師課表 PDF 匯入與共同空堂自動比對系統，支援依時段查詢、個人課表及職務組織快選",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

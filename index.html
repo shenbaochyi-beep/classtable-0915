@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>國立成功商業水產職業學校 教師共同空堂查詢系統</title>
+    <meta name="description" content="國立成功商業水產職業學校教師課表 PDF 匯入與共同空堂自動比對系統，支援依時段查詢、個人課表及職務組織快選" />
+    <meta property="og:title" content="國立成功商業水產職業學校 教師共同空堂查詢系統" />
+    <meta property="og:description" content="國立成功商業水產職業學校教師課表 PDF 匯入與共同空堂自動比對系統，支援依時段查詢、個人課表及職務組織快選" />
+    <meta property="og:type" content="website" />
+    <link rel="icon" type="image/png" href="/school-logo.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+      if (window.pdfjsLib) {
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      }
+    </script>
+  </head>
+  <body class="bg-slate-50 text-slate-900 antialiased font-sans">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
