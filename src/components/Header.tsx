@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, Users, Clock, RotateCcw, Printer, School } from 'lucide-react';
+import { Calendar, Users, Clock, RotateCcw, Printer, School, ArrowRight } from 'lucide-react';
 import { AppSettings, SchedulePreset } from '../types';
 
 interface HeaderProps {
@@ -8,6 +8,8 @@ interface HeaderProps {
   currentPreset?: SchedulePreset;
   onResetUpload: () => void;
   isDemoMode?: boolean;
+  currentScreen?: 'setup' | 'query';
+  onReturnToQuery?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -16,6 +18,8 @@ export const Header: React.FC<HeaderProps> = ({
   currentPreset,
   onResetUpload,
   isDemoMode,
+  currentScreen = 'query',
+  onReturnToQuery,
 }) => {
   return (
     <header className="bg-blue-700 text-white shadow-md sticky top-0 z-40">
@@ -69,23 +73,37 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Right: Actions */}
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => window.print()}
-            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-white/10 hover:bg-white/20 transition-colors border border-white/20"
-            title="列印當前畫面"
-          >
-            <Printer className="w-3.5 h-3.5" />
-            <span>列印</span>
-          </button>
-          <button
-            type="button"
-            onClick={onResetUpload}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-white text-blue-800 hover:bg-blue-50 shadow-sm transition-colors font-semibold"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span>重新上傳課表 / 設定</span>
-          </button>
+          {currentScreen === 'query' && (
+            <button
+              type="button"
+              onClick={() => window.print()}
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-white/10 hover:bg-white/20 transition-colors border border-white/20 cursor-pointer"
+              title="列印當前畫面"
+            >
+              <Printer className="w-3.5 h-3.5" />
+              <span>列印</span>
+            </button>
+          )}
+
+          {currentScreen === 'setup' && teacherCount > 0 && onReturnToQuery ? (
+            <button
+              type="button"
+              onClick={onReturnToQuery}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-emerald-500 hover:bg-emerald-400 text-white shadow-sm transition-colors font-semibold cursor-pointer"
+            >
+              <span>返回課表查詢</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          ) : teacherCount > 0 ? (
+            <button
+              type="button"
+              onClick={onResetUpload}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-white text-blue-800 hover:bg-blue-50 shadow-sm transition-colors font-semibold cursor-pointer"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>重新上傳課表 / 設定</span>
+            </button>
+          ) : null}
         </div>
       </div>
     </header>

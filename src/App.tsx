@@ -23,11 +23,72 @@ const STORAGE_KEYS = {
   SETTINGS: 'tq_settings',
   JOB_GROUPS: 'tq_groups',
   COMMITTEES: 'tq_comm',
+  TEACHERS: 'tq_teachers_data',
+  SELECTED_TEACHERS: 'tq_selected_teachers',
+  IS_DEMO: 'tq_is_demo',
+  SCREEN: 'tq_current_screen',
 };
 
 export default function App() {
-  // Screen state
-  const [currentScreen, setCurrentScreen] = useState<'setup' | 'query'>('setup');
+  // Parsed Teachers loaded from storage if previously uploaded
+  const [teachers, setTeachers] = useState<Teacher[]>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.TEACHERS);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch {
+      // ignore
+    }
+    return [];
+  });
+
+  const [isDemoMode, setIsDemoMode] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem(STORAGE_KEYS.IS_DEMO) === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const [selectedTeacherIds, setSelectedTeacherIds] = useState<Set<number>>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.SELECTED_TEACHERS);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return new Set(parsed);
+        }
+      }
+    } catch {
+      // ignore
+    }
+    return new Set();
+  });
+
+  // Screen state: Default to 'query' if teachers exist and user hasn't pressed '重新上傳課表/設定'
+  const [currentScreen, setCurrentScreen] = useState<'setup' | 'query'>(() => {
+    try {
+      const savedTeachers = localStorage.getItem(STORAGE_KEYS.TEACHERS);
+      if (savedTeachers) {
+        const parsed = JSON.parse(savedTeachers);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const savedScreen = localStorage.getItem(STORAGE_KEYS.SCREEN);
+          if (savedScreen === 'setup') {
+            return 'setup';
+          }
+          return 'query';
+        }
+      }
+    } catch {
+      // ignore
+    }
+    return 'setup';
+  });
+
   const [activeTab, setActiveTab] = useState<'common' | 'period' | 'personal'>('common');
 
   // App Settings
@@ -87,13 +148,8 @@ export default function App() {
     return DEFAULT_COMMITTEES;
   });
 
-  // Parsed Teachers
-  const [teachers, setTeachers] = useState<Teacher[]>([]);
-  const [selectedTeacherIds, setSelectedTeacherIds] = useState<Set<number>>(new Set());
-  const [isDemoMode, setIsDemoMode] = useState<boolean>(false);
-
   // Parsing status
-  const [isParsing, setIsParsing] = useState<boolean>(false);
+  const [isParsing, setIsParsing] = useState<boolean>(() => false);
   const [parseProgress, setParseProgress] = useState<{ current: number; total: number; detail: string }>({
     current: 0,
     total: 0,
@@ -128,6 +184,53 @@ export default function App() {
       // ignore
     }
   }, [committees]);
+
+  // Save teachers & demo mode & selected ids to localStorage
+  useEffect(() => {
+    try {
+      if (teachers.length > 0) {
+        localStorage.setItem(STORAGE_KEYS.TEACHERS, JSON.stringify(teachers));
+      } else {
+        localStorage.removeItem(STORAGE_KEYS.TEACHERS);
+      }
+    } catch {
+      // ignore
+    }
+  }, [teachers]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.IS_DEMO, String(isDemoMode));
+    } catch {
+      // ignore
+    }
+  }, [isDemoMode]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        STORAGE_KEYS.SELECTED_TEACHERS,
+        JSON.stringify(Array.from(selectedTeacherIds))
+      );
+    } catch {
+      // ignore
+    }
+  }, [selectedTeacherIds]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.SCREEN, currentScreen);
+    } catch {
+      // ignore
+    }
+  }, [currentScreen]);
+
+  // Ensure initial teachers selected if empty
+  useEffect(() => {
+    if (teachers.length > 0 && selectedTeacherIds.size === 0) {
+      setSelectedTeacherIds(new Set(teachers.slice(0, 3).map((t) => t.id)));
+    }
+  }, [teachers]);
 
   const currentPreset = useMemo(() => {
     return SCHEDULE_PRESETS[settings.schedulePreset] || SCHEDULE_PRESETS.original;
@@ -176,6 +279,11 @@ export default function App() {
 
       setIsParsing(false);
       setCurrentScreen('query');
+      try {
+        localStorage.setItem(STORAGE_KEYS.SCREEN, 'query');
+      } catch {
+        // ignore
+      }
       setActiveTab('common');
     } catch (err: any) {
       console.error('PDF Parse Error:', err);
@@ -192,7 +300,50 @@ export default function App() {
     // Select first 3 teachers
     setSelectedTeacherIds(new Set([1, 2, 3]));
     setCurrentScreen('query');
+    try {
+      localStorage.setItem(STORAGE_KEYS.SCREEN, 'query');
+    } catch {
+      // ignore
+    }
     setActiveTab('common');
+  };
+
+  // Screen actions
+  const handleResetUpload = () => {
+    setCurrentScreen('setup');
+    try {
+      localStorage.setItem(STORAGE_KEYS.SCREEN, 'setup');
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleReturnToQuery = () => {
+    if (teachers.length > 0) {
+      setCurrentScreen('query');
+      try {
+        localStorage.setItem(STORAGE_KEYS.SCREEN, 'query');
+      } catch {
+        // ignore
+      }
+    }
+  };
+
+  const handleClearTimetableData = () => {
+    if (window.confirm('確定要清除目前已儲存的課表資料嗎？此操作無法復原。')) {
+      setTeachers([]);
+      setSelectedTeacherIds(new Set());
+      setIsDemoMode(false);
+      try {
+        localStorage.removeItem(STORAGE_KEYS.TEACHERS);
+        localStorage.removeItem(STORAGE_KEYS.SELECTED_TEACHERS);
+        localStorage.removeItem(STORAGE_KEYS.IS_DEMO);
+        localStorage.setItem(STORAGE_KEYS.SCREEN, 'setup');
+      } catch {
+        // ignore
+      }
+      setCurrentScreen('setup');
+    }
   };
 
   // Toggle single teacher selection
@@ -238,8 +389,10 @@ export default function App() {
         settings={settings}
         teacherCount={teachers.length}
         currentPreset={currentPreset}
-        onResetUpload={() => setCurrentScreen('setup')}
+        onResetUpload={handleResetUpload}
         isDemoMode={isDemoMode}
+        currentScreen={currentScreen}
+        onReturnToQuery={handleReturnToQuery}
       />
 
       {/* Main Content Area */}
@@ -267,6 +420,10 @@ export default function App() {
             isParsing={isParsing}
             parseProgress={parseProgress}
             errorMessage={errorMessage}
+            hasExistingData={teachers.length > 0}
+            existingTeacherCount={teachers.length}
+            onReturnToQuery={handleReturnToQuery}
+            onClearTimetableData={handleClearTimetableData}
           />
         ) : (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-5">

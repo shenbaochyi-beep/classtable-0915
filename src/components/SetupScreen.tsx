@@ -13,6 +13,7 @@ import {
   Sparkles,
   AlertCircle,
   CheckCircle2,
+  ArrowRight,
 } from 'lucide-react';
 import { AppSettings, JobGroupConfig, CommitteeConfig } from '../types';
 import { SCHEDULE_PRESETS } from '../utils/constants';
@@ -31,6 +32,10 @@ interface SetupScreenProps {
   isParsing: boolean;
   parseProgress: { current: number; total: number; detail: string };
   errorMessage?: string;
+  hasExistingData?: boolean;
+  existingTeacherCount?: number;
+  onReturnToQuery?: () => void;
+  onClearTimetableData?: () => void;
 }
 
 export const SetupScreen: React.FC<SetupScreenProps> = ({
@@ -47,6 +52,10 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({
   isParsing,
   parseProgress,
   errorMessage,
+  hasExistingData,
+  existingTeacherCount = 0,
+  onReturnToQuery,
+  onClearTimetableData,
 }) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -155,6 +164,46 @@ export const SetupScreen: React.FC<SetupScreenProps> = ({
           </div>
 
           <div className="p-6 sm:p-8 space-y-8">
+            {/* Existing Timetable Banner */}
+            {hasExistingData && (
+              <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                    <CheckCircle2 className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-bold text-emerald-900">
+                      目前系統已存有課表資料（共 {existingTeacherCount} 位教師）
+                    </div>
+                    <div className="text-xs text-emerald-700 mt-0.5">
+                      您可以隨時點擊「返回課表查詢」直接繼續使用，或在下方上傳新檔案進行覆蓋更換。
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+                  {onClearTimetableData && (
+                    <button
+                      type="button"
+                      onClick={onClearTimetableData}
+                      className="text-xs text-rose-600 hover:text-rose-800 font-medium px-2.5 py-1.5 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
+                    >
+                      清除舊課表
+                    </button>
+                  )}
+                  {onReturnToQuery && (
+                    <button
+                      type="button"
+                      onClick={onReturnToQuery}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition-colors cursor-pointer"
+                    >
+                      <span>返回課表查詢</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Error Message */}
             {errorMessage && (
               <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl flex items-start gap-3 text-sm">
